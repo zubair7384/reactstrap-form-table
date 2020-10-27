@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import ReactTable from "./ReactTable"
 
@@ -20,10 +20,40 @@ const ReactForm = (props) => {
         })
     }
 
-    const onFormSubmit = (e) => {
+    const onFormSubmit = async (e) => {
+
         e.preventDefault()
-        setValues([...values, state])
+
+        try {
+            const { name, email, password, text } = state
+            const response = await fetch('http://localhost:5000/tform', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, password, text })
+            })
+            setValues([...values, state])
+
+        } catch (err) {
+            console.error(err.message)
+        }
+
+
     }
+
+    const getTable = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/tform");
+            const jsonData = await response.json();
+            setValues(jsonData);
+
+        } catch (err) {
+            console.error(err.message)
+        }
+    }
+
+    useEffect(() => {
+        getTable();
+    }, [])
 
     return (
         <Fragment>
@@ -47,7 +77,7 @@ const ReactForm = (props) => {
                 </FormGroup>
                 <Button color="btn btn-info btn-lg btn-block">Submit</Button>
             </Form>
-            <ReactTable values={values} />
+            <ReactTable values={values}></ReactTable>
         </Fragment>
     );
 }
